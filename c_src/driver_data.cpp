@@ -266,8 +266,8 @@ void driver_data::tick(double timeStep)
 	for (int i=0;i<numManifolds;i++)
 	{
 		btPersistentManifold* contactManifold = world->getDispatcher()->getManifoldByIndexInternal(i);
-		btRigidBody* obA = static_cast<btRigidBody*>(contactManifold->getBody0());
-		btRigidBody* obB = static_cast<btRigidBody*>(contactManifold->getBody1());
+		const btRigidBody* obA = btRigidBody::upcast(contactManifold->getBody0());
+		const btRigidBody* obB = btRigidBody::upcast(contactManifold->getBody1());
 
 		int numContacts = contactManifold->getNumContacts();
 		for (int j=0;j<numContacts;j++)
@@ -279,8 +279,12 @@ void driver_data::tick(double timeStep)
 				const btVector3& ptB = pt.getPositionWorldOnB();
 				const btVector3& normalOnB = pt.m_normalWorldOnB;
 
-				motion_state* msA=dynamic_cast<motion_state*>(obA->getMotionState());
-				motion_state* msB=dynamic_cast<motion_state*>(obB->getMotionState());
+				btMotionState *usA = const_cast<btMotionState *>(obA->getMotionState());
+				btMotionState *usB = const_cast<btMotionState *>(obB->getMotionState());
+
+
+				motion_state* msA= dynamic_cast<motion_state*>(usA);
+				motion_state* msB= dynamic_cast<motion_state*>(usB);
 				msA->addCollision(msB->get_id(),ptA);
 				msB->addCollision(msA->get_id(),ptB);
 			}
